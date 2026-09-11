@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="第6章 交互式数据可视化：Tooltip、筛选、Brush、Zoom 与多视图联动。" />
   <title>第6章 交互式数据可视化 · D3.js</title>
-  <link rel="stylesheet" href="./css/style.css?v=6" />
+  <link rel="stylesheet" href="./css/style.css?v=7" />
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-  <script defer src="./js/demo1-tooltip.js?v=6"></script>
-  <script defer src="./js/demo2-filter.js?v=6"></script>
-  <script defer src="./js/demo3-brush.js?v=6"></script>
-  <script defer src="./js/demo4-zoom.js?v=6"></script>
-  <script defer src="./js/demo5-dashboard.js?v=6"></script>
-  <script defer src="./js/main.js?v=6"></script>
+  <script defer src="./js/demo1-tooltip.js?v=7"></script>
+  <script defer src="./js/demo2-filter.js?v=7"></script>
+  <script defer src="./js/demo3-brush.js?v=7"></script>
+  <script defer src="./js/demo4-zoom.js?v=7"></script>
+  <script defer src="./js/demo5-dashboard.js?v=7"></script>
+  <script defer src="./js/main.js?v=7"></script>
 </head>
 <body>
   <header class="topbar">
@@ -216,13 +216,13 @@ bars.data(summary, d =&gt; d.major)
             <div class="theory-grid">
               <article><h3>Zoom 的本质</h3><p>不是修改原始数据，而是改变“数据坐标 → 屏幕坐标”的映射。D3 用 transform 记录缩放比例与平移量。</p></article>
               <article><h3>rescaleX</h3><p><code>event.transform.rescaleX(x0)</code> 根据当前 transform 生成新的时间比例尺，再重绘坐标轴和折线。</p></article>
-              <article class="key-card"><h3>设计注意</h3><p>限制缩放倍数，提供“双击重置”，并避免纵向滚动页面时误触图表缩放。</p></article>
+              <article class="key-card"><h3>设计注意</h3><p>将滚轮缩放限定在图表区域，并设置缩放上下限；达到边界后继续滚轮也不会触发浏览器页面缩放。</p></article>
             </div>
           </div>
           <div class="tab-panel" data-panel="code">
             <div class="code-intro"><span>KEY IMPLEMENTATION</span><h3>Zoom Transform</h3><p>保留原始比例尺，用 transform 生成新的可视比例尺，从而改变观察窗口。</p></div>
 <pre><code>const zoom = d3.zoom()
-  .scaleExtent([1, 12])
+  .scaleExtent([1, 8])
   .translateExtent([[0, 0], [innerW, innerH]])
   .on('zoom', (event) =&gt; {
     const zx = event.transform.rescaleX(x0);
@@ -232,7 +232,7 @@ bars.data(summary, d =&gt; d.major)
           </div>
           <div class="tab-panel" data-panel="demo">
             <div class="demo-card">
-              <div class="demo-title"><div><span>INTERACTIVE DEMO</span><strong>两年学习投入指数</strong><small>Ctrl + 滚轮缩放 · 左右拖动 · 双击重置</small></div><button id="zoom-reset" class="ghost-btn">重置视图</button></div>
+              <div class="demo-title"><div><span>INTERACTIVE DEMO</span><strong>两年学习投入指数</strong><small>滚轮缩放 · 拖动平移 · 双击重置</small></div><div class="demo-actions"><span id="zoom-level" class="zoom-level">1.0× · 最小</span><button id="zoom-reset" class="ghost-btn">重置视图</button></div></div>
               <div id="demo-zoom" class="viz"></div>
             </div>
           </div>

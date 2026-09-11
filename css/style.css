@@ -170,6 +170,10 @@ pre::before{content:"CODE";position:absolute;right:14px;top:12px;color:#687188;f
 .count-pill{margin-left:auto;padding:5px 9px;border-radius:999px;background:var(--teal-soft);color:var(--teal);font-size:11px;font-weight:800}
 .ghost-btn{border:1px solid #d9dee5;background:#fff;border-radius:8px;padding:7px 11px;color:#596375;cursor:pointer;font-size:12px;font-weight:700}
 .ghost-btn:hover{border-color:#a9cfc9;color:var(--teal)}
+.demo-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.zoom-level{min-width:88px;padding:6px 9px!important;border:1px solid #dcdff0;border-radius:999px;background:var(--violet-soft);color:var(--violet)!important;font:800 10px var(--mono)!important;letter-spacing:0!important;text-align:center;transition:.18s ease}
+.zoom-level.at-limit{background:var(--amber-soft);border-color:#efdfbd;color:#9a6a25!important}
+.zoom-overlay{touch-action:none}
 .tooltip{position:fixed;z-index:100;pointer-events:none;opacity:0;transform:translate(10px,10px);padding:10px 12px;border-radius:9px;background:rgba(22,29,43,.96);color:white;box-shadow:0 10px 30px rgba(17,24,44,.2);font-size:12px;line-height:1.65;transition:opacity .12s}
 .tooltip.show{opacity:1}
 .tooltip b{font-size:13px}
@@ -231,6 +235,7 @@ footer p{margin:0}
   .code-intro span{grid-row:auto}
   pre{padding:20px;font-size:11px}
   .demo-title,.dashboard-toolbar{align-items:flex-start;flex-direction:column}
+  .demo-actions{width:100%;justify-content:space-between}
   .control-row{align-items:flex-start;flex-wrap:wrap}
   .count-pill{margin-left:0}
   .stat-grid{grid-template-columns:1fr 1fr}
