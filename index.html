@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="第6章 交互式数据可视化：Tooltip、筛选、Brush、Zoom 与多视图联动。" />
+  <title>第6章 交互式数据可视化 · D3.js</title>
+  <link rel="stylesheet" href="./css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script defer src="./js/demo1-tooltip.js"></script>
+  <script defer src="./js/demo2-filter.js"></script>
+  <script defer src="./js/demo3-brush.js"></script>
+  <script defer src="./js/demo4-zoom.js"></script>
+  <script defer src="./js/demo5-dashboard.js"></script>
+  <script defer src="./js/main.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="回到顶部">
+      <span class="brand-mark">VIS</span>
+      <span>VISUALIZATION · INTRODUCTION</span>
+    </a>
+    <nav class="top-actions" aria-label="页面导航">
+      <a href="#outline">章节目录</a>
+      <a href="#section-65">综合演示</a>
+      <span class="status-dot">D3.js v7</span>
+    </nav>
+  </header>
+
+  <main id="top" class="page-shell">
+    <aside class="sidebar" aria-label="章节目录">
+      <div class="side-title">章节目录</div>
+      <a class="side-link active" href="#section-61"><span>6.1</span> Tooltip 信息提示</a>
+      <a class="side-link" href="#section-62"><span>6.2</span> 筛选与动态更新</a>
+      <a class="side-link" href="#section-63"><span>6.3</span> Brush 区域选择</a>
+      <a class="side-link" href="#section-64"><span>6.4</span> Zoom 缩放与平移</a>
+      <a class="side-link" href="#section-65"><span>6.5</span> 多视图联动</a>
+      <div class="side-note">数据说明<br><strong>192 条教学模拟数据</strong><br>不对应真实个人。</div>
+    </aside>
+
+    <div class="content">
+      <section class="hero">
+        <div class="eyebrow">INTERACTION · EXPLORATORY VISUALIZATION</div>
+        <h1>第 6 章 交互式数据可视化</h1>
+        <p class="hero-subtitle">从“看图”到“探索数据”：Tooltip、筛选、Brush、Zoom 与 Linked Views。</p>
+        <div class="hero-meta">
+          <span>Doc-06 集成教学页面</span><span>讲解 ⇄ 代码 ⇄ 演示</span><span>5 个小节</span>
+        </div>
+        <div class="hero-grid" aria-hidden="true">
+          <div class="hero-card"><strong>01</strong><span>Hover</span></div>
+          <div class="hero-card"><strong>02</strong><span>Filter</span></div>
+          <div class="hero-card"><strong>03</strong><span>Brush</span></div>
+          <div class="hero-card"><strong>04</strong><span>Zoom</span></div>
+          <div class="hero-card"><strong>05</strong><span>Link</span></div>
+        </div>
+      </section>
+
+      <section id="outline" class="outline-card">
+        <div>
+          <span class="section-kicker">CHAPTER ROADMAP</span>
+          <h2>本章学习路径</h2>
+          <p>使用同一套“大学生学习与生活”模拟数据，从信息提示逐步过渡到筛选、选择、缩放与多视图联动。</p>
+        </div>
+        <div class="outline-flow">
+          <span>显示细节</span><b>→</b><span>筛选数据</span><b>→</b><span>框选区域</span><b>→</b><span>缩放时间</span><b>→</b><span>多视图联动</span>
+        </div>
+      </section>
+
+      <section id="section-61" class="lesson-section" data-section="61">
+        <header class="lesson-head">
+          <div><span class="lesson-no">6.1</span><h2>Tooltip 信息提示</h2></div>
+          <p>用悬停交互把“概览”与“细节”放在同一张图中。</p>
+        </header>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="learn">📖 讲解</button>
+          <button class="tab" data-tab="code">⌨️ 关键代码</button>
+          <button class="tab" data-tab="demo">▶️ 演示</button>
+        </div>
+        <div class="tab-panel active" data-panel="learn">
+          <div class="theory-grid">
+            <article><h3>为什么需要 Tooltip？</h3><p>散点图适合比较整体分布，但把每个学生的所有字段都写在图上会造成视觉拥挤。Tooltip 让信息“按需出现”。</p></article>
+            <article><h3>交互流程</h3><p><code>pointerenter</code> 显示 → <code>pointermove</code> 跟随 → <code>pointerleave</code> 隐藏，同时高亮当前数据点。</p></article>
+            <article class="key-card"><h3>⭐ 关键点</h3><p>Tooltip 不应遮挡鼠标目标；位置要考虑视口边缘；内容只放与当前任务有关的字段。</p></article>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="code">
+<pre><code>// 数据绑定 + hover
+points.on('pointerenter', (event, d) =&gt; {
+  tooltip.classed('show', true)
+    .html(`&lt;b&gt;${d.id}&lt;/b&gt;&lt;br&gt;成绩 ${d.score}`);
+  d3.select(event.currentTarget).attr('r', 7);
+})
+.on('pointermove', moveTooltip)
+.on('pointerleave', (event) =&gt; {
+  tooltip.classed('show', false);
+  d3.select(event.currentTarget).attr('r', 4.5);
+});</code></pre>
+        </div>
+        <div class="tab-panel" data-panel="demo">
+          <div class="demo-card">
+            <div class="demo-title"><div><strong>学习时间 × 课程成绩</strong><span>将鼠标移动到任意圆点</span></div><div class="legend-inline"><i></i>每个点 = 1 名模拟学生</div></div>
+            <div id="demo-tooltip" class="viz"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-62" class="lesson-section" data-section="62">
+        <header class="lesson-head">
+          <div><span class="lesson-no">6.2</span><h2>筛选与动态更新</h2></div>
+          <p>把交互控件变成数据查询条件，并用 transition 保持变化连续。</p>
+        </header>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="learn">📖 讲解</button>
+          <button class="tab" data-tab="code">⌨️ 关键代码</button>
+          <button class="tab" data-tab="demo">▶️ 演示</button>
+        </div>
+        <div class="tab-panel active" data-panel="learn">
+          <div class="theory-grid">
+            <article><h3>Filter = 交互式查询</h3><p>用户选择专业或年级后，程序先过滤数据，再重新聚合。图形只负责表达当前结果。</p></article>
+            <article><h3>Data Join</h3><p>D3 的 <code>selection.data()</code> 将新数据与已有元素匹配；<code>join()</code> 负责进入、更新和退出三种状态。</p></article>
+            <article class="key-card"><h3>⭐ 关键点</h3><p>动态更新时不要清空整个 SVG 重画。保留元素并 transition，用户才能理解“什么发生了变化”。</p></article>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="code">
+<pre><code>const filtered = data.filter(d =&gt;
+  (major === '全部' || d.major === major) &amp;&amp;
+  (grade === '全部' || d.grade === grade)
+);
+
+bars.data(summary, d =&gt; d.major)
+  .join('rect')
+  .transition().duration(500)
+  .attr('y', d =&gt; y(d.avg))
+  .attr('height', d =&gt; innerH - y(d.avg));</code></pre>
+        </div>
+        <div class="tab-panel" data-panel="demo">
+          <div class="demo-card">
+            <div class="control-row">
+              <label>年级 <select id="filter-grade"><option>全部</option><option>大一</option><option>大二</option><option>大三</option><option>大四</option></select></label>
+              <label>指标 <select id="filter-metric"><option value="score">平均成绩</option><option value="study_hours">平均学习时长</option><option value="sleep_hours">平均睡眠时长</option></select></label>
+              <span id="filter-count" class="count-pill"></span>
+            </div>
+            <div id="demo-filter" class="viz"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-63" class="lesson-section" data-section="63">
+        <header class="lesson-head">
+          <div><span class="lesson-no">6.3</span><h2>Brush 区域选择</h2></div>
+          <p>用拖拽框选一批数据，让“看分布”变成“选群体”。</p>
+        </header>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="learn">📖 讲解</button>
+          <button class="tab" data-tab="code">⌨️ 关键代码</button>
+          <button class="tab" data-tab="demo">▶️ 演示</button>
+        </div>
+        <div class="tab-panel active" data-panel="learn">
+          <div class="theory-grid">
+            <article><h3>Brush 做什么？</h3><p>Brush 把屏幕上的矩形范围转换成数据选择。它常用于散点图探索、区间过滤和联动分析。</p></article>
+            <article><h3>屏幕坐标与数据坐标</h3><p>Brush 返回像素范围，判断点是否落入矩形时使用 <code>x(d)</code> 与 <code>y(d)</code> 投影后的像素位置。</p></article>
+            <article class="key-card"><h3>⭐ 关键点</h3><p>被选中与未选中数据要有明显视觉层级，但不要让未选中数据完全消失，否则会失去上下文。</p></article>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="code">
+<pre><code>const brush = d3.brush()
+  .extent([[0, 0], [innerW, innerH]])
+  .on('brush end', ({selection}) =&gt; {
+    const selected = selection
+      ? data.filter(d =&gt; inside(selection, x(d.study_hours), y(d.sleep_hours)))
+      : data;
+    updateSelection(selected);
+  });</code></pre>
+        </div>
+        <div class="tab-panel" data-panel="demo">
+          <div class="demo-card">
+            <div class="demo-title"><div><strong>学习时间 × 睡眠时间</strong><span>在图中拖拽矩形进行框选；单击空白可重置</span></div><div id="brush-summary" class="count-pill">等待框选</div></div>
+            <div id="demo-brush" class="viz"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-64" class="lesson-section" data-section="64">
+        <header class="lesson-head">
+          <div><span class="lesson-no">6.4</span><h2>Zoom 缩放与平移</h2></div>
+          <p>当时间轴太长时，让用户改变观察尺度，而不是把所有细节挤在一起。</p>
+        </header>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="learn">📖 讲解</button>
+          <button class="tab" data-tab="code">⌨️ 关键代码</button>
+          <button class="tab" data-tab="demo">▶️ 演示</button>
+        </div>
+        <div class="tab-panel active" data-panel="learn">
+          <div class="theory-grid">
+            <article><h3>Zoom 的本质</h3><p>不是修改原始数据，而是改变“数据坐标 → 屏幕坐标”的映射。D3 用 transform 记录缩放比例与平移量。</p></article>
+            <article><h3>rescaleX</h3><p><code>event.transform.rescaleX(x0)</code> 根据当前 transform 生成新的时间比例尺，再重绘坐标轴和折线。</p></article>
+            <article class="key-card"><h3>⭐ 关键点</h3><p>限制缩放倍数，提供“双击重置”，并避免纵向滚动页面时误触图表缩放。</p></article>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="code">
+<pre><code>const zoom = d3.zoom()
+  .scaleExtent([1, 12])
+  .translateExtent([[0, 0], [innerW, innerH]])
+  .on('zoom', (event) =&gt; {
+    const zx = event.transform.rescaleX(x0);
+    xAxis.call(d3.axisBottom(zx));
+    line.attr('d', d3.line().x(d =&gt; zx(d.date)).y(d =&gt; y(d.value))(series));
+  });</code></pre>
+        </div>
+        <div class="tab-panel" data-panel="demo">
+          <div class="demo-card">
+            <div class="demo-title"><div><strong>两年学习投入指数</strong><span>Ctrl + 滚轮缩放 · 左右拖动 · 双击重置</span></div><button id="zoom-reset" class="ghost-btn">重置视图</button></div>
+            <div id="demo-zoom" class="viz"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-65" class="lesson-section" data-section="65">
+        <header class="lesson-head">
+          <div><span class="lesson-no">6.5</span><h2>多视图联动 Dashboard</h2></div>
+          <p>把前四节的思想组合起来：一个选择，同时改变多个视图。</p>
+        </header>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="learn">📖 讲解</button>
+          <button class="tab" data-tab="code">⌨️ 关键代码</button>
+          <button class="tab" data-tab="demo">▶️ 演示</button>
+        </div>
+        <div class="tab-panel active" data-panel="learn">
+          <div class="theory-grid">
+            <article><h3>Linked Views</h3><p>不同图表共享同一个选择状态。散点图负责定位个体，条形图负责比较类别，统计卡片负责给出精确数值。</p></article>
+            <article><h3>一个状态，多种表达</h3><p>本例用 <code>selectedMajor</code> 保存专业筛选，所有视图都从同一份 filteredData 派生，避免多个图表状态不一致。</p></article>
+            <article class="key-card"><h3>⭐ 关键点</h3><p>联动不是“图越多越好”。每个视图必须回答不同问题，并且共享明确的交互语义。</p></article>
+          </div>
+        </div>
+        <div class="tab-panel" data-panel="code">
+<pre><code>let selectedMajor = '全部';
+
+function updateDashboard() {
+  const filtered = selectedMajor === '全部'
+    ? data
+    : data.filter(d =&gt; d.major === selectedMajor);
+
+  updateScatter(filtered);
+  updateGradeBars(filtered);
+  updateStats(filtered);
+}</code></pre>
+        </div>
+        <div class="tab-panel" data-panel="demo">
+          <div class="dashboard-shell">
+            <div class="dashboard-toolbar">
+              <div><strong>学生学习行为探索 Dashboard</strong><span>点击专业筛选；悬停散点查看个体</span></div>
+              <div id="dashboard-filters" class="chip-group"></div>
+            </div>
+            <div class="stat-grid">
+              <article><span>样本数</span><strong id="stat-count">—</strong></article>
+              <article><span>平均成绩</span><strong id="stat-score">—</strong></article>
+              <article><span>平均学习</span><strong id="stat-study">—</strong></article>
+              <article><span>平均睡眠</span><strong id="stat-sleep">—</strong></article>
+            </div>
+            <div class="dashboard-grid">
+              <div class="panel"><div class="panel-label">学习时间 × 成绩</div><div id="dash-scatter" class="viz viz-small"></div></div>
+              <div class="panel"><div class="panel-label">各年级平均成绩</div><div id="dash-bars" class="viz viz-small"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div><strong>第 6 章 · 交互式数据可视化</strong><span>HTML + CSS + JavaScript + D3.js v7</span></div>
+        <p>课程作业页面 · 数据为教学模拟数据 · 支持 GitHub Pages 静态部署</p>
+      </footer>
+    </div>
+  </main>
+  <div id="global-tooltip" class="tooltip" role="status"></div>
+</body>
+</html>
