@@ -42,26 +42,28 @@ button,select{font:inherit}
 
 /* 主体：目录 + 讲义 */
 .page-shell{
-  max-width:1320px;margin:0 auto;display:grid;
-  grid-template-columns:208px minmax(0,1fr);gap:34px;
+  max-width:1360px;margin:0 auto;display:grid;
+  grid-template-columns:220px minmax(0,1fr);gap:28px;
   padding:30px 28px 72px;
 }
 .sidebar{
   position:sticky;top:88px;height:max-content;
-  padding:10px 0 14px;border-right:1px solid var(--line);
+  padding:18px 12px 16px;background:rgba(255,255,255,.88);
+  border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 8px 28px rgba(31,42,68,.045);
 }
-.side-title{padding:0 14px 12px;color:#98a2b3;font-size:11px;font-weight:800;letter-spacing:.14em}
+.side-title{padding:0 10px 12px;color:#98a2b3;font-size:11px;font-weight:800;letter-spacing:.14em}
 .side-link{
   position:relative;display:flex;gap:9px;align-items:center;
-  margin:2px 0;padding:10px 14px;color:#6f7890;font-size:13px;border-radius:9px 0 0 9px;
+  margin:3px 0;padding:10px 10px;color:#6f7890;font-size:13px;border-radius:9px;
 }
-.side-link::before{content:"";position:absolute;left:-1px;top:9px;bottom:9px;width:3px;border-radius:3px;background:transparent}
+.side-link::before{content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:transparent}
 .side-link span{width:30px;font:700 11px var(--mono);color:#a4acbd}
 .side-link:hover{background:#f1f3fb;color:var(--ink)}
 .side-link.active{background:var(--soft-2);color:var(--primary);font-weight:750}
 .side-link.active span{color:var(--primary)}
 .side-link.active::before{background:var(--primary)}
-.side-note{margin:14px 14px 0;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:#98a2b3;line-height:1.7}
+.side-note{margin:14px 10px 0;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:#98a2b3;line-height:1.7}
 .side-note strong{color:#596276;font-weight:700}
 .content{min-width:0}
 
@@ -94,7 +96,8 @@ button,select{font:inherit}
 /* 章节概览：一条教学路径 */
 .outline-card{
   display:grid;grid-template-columns:minmax(260px,.9fr) minmax(0,1.5fr);gap:34px;
-  margin:20px 0 34px;padding:22px 4px 24px;border-bottom:1px solid var(--line);
+  margin:20px 0 24px;padding:22px 24px;
+  background:rgba(255,255,255,.74);border:1px solid var(--line);border-radius:12px;
 }
 .outline-card h2{margin:4px 0 4px;font-size:19px;letter-spacing:-.01em}
 .outline-card p{margin:0;color:var(--muted);font-size:13px}
@@ -102,12 +105,18 @@ button,select{font:inherit}
 .outline-flow span{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:white;font-size:11px;font-weight:700;color:#5f697d}
 .outline-flow b{color:#aab2c1;font-size:12px}
 
-/* 每小节：像“讲义章节”，而不是大卡片套小卡片 */
+/* 每小节：独立讲义卡片，让章节层级更明确 */
 .lesson-section{
-  scroll-margin-top:82px;margin-top:0;padding:34px 0 40px;
-  border-bottom:1px solid var(--line);
+  position:relative;scroll-margin-top:82px;
+  margin:0 0 22px;padding:30px 32px 32px;
+  background:var(--paper);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 10px 30px rgba(31,42,68,.045);
 }
-.lesson-section:first-of-type{padding-top:6px}
+.lesson-section::before{
+  content:"";position:absolute;left:0;top:30px;width:4px;height:42px;
+  border-radius:0 4px 4px 0;background:linear-gradient(180deg,var(--primary),#7f8df2);
+}
+.lesson-section:first-of-type{padding-top:30px}
 .lesson-head{display:block;padding:0 2px 18px}
 .lesson-head>div{display:flex;align-items:center;gap:12px}
 .lesson-no{
@@ -115,7 +124,7 @@ button,select{font:inherit}
   background:var(--soft);color:var(--primary);font:800 12px var(--mono);
 }
 .lesson-head h2{margin:0;font-size:26px;letter-spacing:-.025em}
-.lesson-head p{margin:9px 0 0 58px;max-width:760px;text-align:left;color:var(--muted);font-size:13px}
+.lesson-head p{margin:9px 0 0 58px;max-width:820px;text-align:left;color:var(--muted);font-size:13px}
 
 /* Tab：课程网站常见的下划线式切换 */
 .tabs{
@@ -137,7 +146,7 @@ button,select{font:inherit}
 .theory-grid{display:flex;flex-direction:column;gap:0}
 .theory-grid article{
   display:grid;grid-template-columns:210px minmax(0,1fr);column-gap:34px;
-  align-items:start;padding:25px 4px;border-bottom:1px solid var(--line);
+  align-items:start;padding:24px 4px;border-bottom:1px solid #edf0f5;
   background:transparent;border-radius:0;
 }
 .theory-grid article:last-child{border-bottom:0}
@@ -222,6 +231,8 @@ footer p{margin:0}
   .topbar{padding:0 16px}
   .brand>span:last-child{display:none}
   .page-shell{padding:18px 14px 50px}
+  .lesson-section{padding:24px 20px 26px;border-radius:14px}
+  .lesson-section::before{top:24px}
   .hero{padding:30px 24px 24px}
   .hero::before{display:none}
   .hero::after{left:24px;right:24px;bottom:102px}
