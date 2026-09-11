@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="第6章 可视化页面布局：从页面骨架、盒模型、Flexbox、CSS Grid 到响应式 Dashboard 的完整布局方法。" />
+  <title>第6章 可视化页面布局 · HTML + CSS</title>
+  <link rel="stylesheet" href="./css/style.css?v=8" />
+  <script defer src="./js/layout-demos.js?v=8"></script>
+  <script defer src="./js/main.js?v=8"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#section-61" data-go-section="61" aria-label="回到本章第一节">
+      <span class="brand-mark">VIS</span>
+      <span class="brand-copy"><strong>VISUALIZATION</strong><small>LAYOUT CHAPTER</small></span>
+    </a>
+    <div class="top-chapter">第 6 章 · 可视化页面布局</div>
+    <nav class="top-actions" aria-label="页面导航">
+      <a href="#section-66" data-go-section="66">综合案例</a>
+      <span class="status-dot">HTML · CSS · JS</span>
+    </nav>
+  </header>
+
+  <main class="course-shell">
+    <aside class="chapter-nav" aria-label="章节目录">
+      <div class="chapter-nav-head">
+        <span>CHAPTER 06</span>
+        <h2>可视化页面布局</h2>
+        <p>Web Layout for Visualization</p>
+      </div>
+      <nav class="lesson-nav">
+        <a class="side-link tone-1 active" href="#section-61" data-section="61"><span class="side-index">01</span><span><b>Structure</b><small>页面骨架与层级</small></span></a>
+        <a class="side-link tone-2" href="#section-62" data-section="62"><span class="side-index">02</span><span><b>Box Model</b><small>盒模型与间距</small></span></a>
+        <a class="side-link tone-3" href="#section-63" data-section="63"><span class="side-index">03</span><span><b>Flexbox</b><small>一维弹性布局</small></span></a>
+        <a class="side-link tone-4" href="#section-64" data-section="64"><span class="side-index">04</span><span><b>CSS Grid</b><small>二维网格布局</small></span></a>
+        <a class="side-link tone-5" href="#section-65" data-section="65"><span class="side-index">05</span><span><b>Responsive</b><small>响应式布局</small></span></a>
+        <a class="side-link tone-6" href="#section-66" data-section="66"><span class="side-index">06</span><span><b>Dashboard</b><small>综合页面布局</small></span></a>
+      </nav>
+      <div class="side-note">
+        <span>LEARNING GOAL</span>
+        <strong>从“摆元素”到“搭系统”</strong>
+        <p>每节都包含讲解、关键代码和一个可直接操作的布局 Demo。</p>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <section class="chapter-strip" aria-label="本章学习路径">
+        <div class="strip-title">
+          <span class="strip-kicker">CHAPTER 06</span>
+          <div>
+            <h1>可视化页面布局</h1>
+            <p>从结构、间距到响应式 Dashboard</p>
+          </div>
+        </div>
+        <div class="roadmap" aria-label="学习路径">
+          <button type="button" class="roadmap-step active" data-go-section="61"><b>01</b><span>骨架</span></button><i></i>
+          <button type="button" class="roadmap-step" data-go-section="62"><b>02</b><span>盒模型</span></button><i></i>
+          <button type="button" class="roadmap-step" data-go-section="63"><b>03</b><span>Flex</span></button><i></i>
+          <button type="button" class="roadmap-step" data-go-section="64"><b>04</b><span>Grid</span></button><i></i>
+          <button type="button" class="roadmap-step" data-go-section="65"><b>05</b><span>响应式</span></button><i></i>
+          <button type="button" class="roadmap-step" data-go-section="66"><b>06</b><span>综合</span></button>
+        </div>
+        <div class="strip-progress">
+          <span>PROGRESS</span>
+          <strong id="progress-current">01</strong><em>/06</em>
+          <div class="progress-track"><i id="progress-bar"></i></div>
+        </div>
+      </section>
+
+      <div class="lesson-reader">
+        <section id="section-61" class="lesson-section active-section" data-section="61">
+          <header class="lesson-head">
+            <div class="lesson-overline"><span>LESSON</span><b>01</b></div>
+            <h2>页面骨架与视觉层级</h2>
+            <span class="lesson-subtitle">Structure & Hierarchy</span>
+            <p>页面布局的第一步不是选颜色，而是先决定“哪些内容属于同一区域、它们按照什么顺序出现”。</p>
+          </header>
+          <div class="tabs" role="tablist" aria-label="6.1 内容切换">
+            <button class="tab active" data-tab="learn"><span>01</span>讲解</button>
+            <button class="tab" data-tab="code"><span>02</span>关键代码</button>
+            <button class="tab" data-tab="demo"><span>03</span>演示</button>
+          </div>
+          <div class="tab-panel active" data-panel="learn">
+            <div class="theory-grid">
+              <article><h3>先分区，再摆元素</h3><div><p>先把页面拆成 <code>header</code>、<code>nav</code>、<code>main</code>、<code>aside</code>、<code>section</code>、<code>footer</code> 等区域，再考虑每个区域内部的排版。这样做能先解决“结构”，避免一开始就陷入字体、颜色和按钮细节。</p><p class="micro-note">判断标准：同一任务、同一语义、同一视觉层级的内容，应尽量放在同一区域。</p></div></article>
+              <article><h3>正常文档流是默认起点</h3><div><p>块级元素默认从上到下排列，这就是 Normal Flow。一个可靠的页面应当在不使用绝对定位时仍然保持基本可读；绝对定位适合局部装饰，不适合承担整页布局。</p><p class="micro-note">DOM 顺序还会影响键盘访问、屏幕阅读器和移动端重排，因此“视觉顺序”最好与“文档顺序”一致。</p></div></article>
+              <article><h3>用容器控制阅读宽度</h3><div><p>正文直接铺满超宽屏会导致视线移动距离过大。常见做法是给主内容设置 <code>max-width</code>，再用 <code>margin-inline:auto</code> 居中；外层负责背景，内层负责内容宽度。</p></div></article>
+              <article><h3>层级来自四件事</h3><div><p>字号、字重、间距和对齐共同决定层级。标题不一定要“特别大”，只要和正文形成稳定差异即可。相比不断增加颜色，留白通常是更可靠的分组手段。</p></div></article>
+              <article class="key-card"><h3>布局顺序</h3><div><p><strong>结构 → 尺寸 → 间距 → 对齐 → 颜色与装饰。</strong>如果结构尚未稳定就先做视觉装饰，后期往往需要反复推翻。</p></div></article>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="code">
+            <div class="code-intro"><span>KEY IMPLEMENTATION</span><h3>语义结构 + 居中容器</h3><p>让 HTML 结构表达页面含义，再让 CSS 决定区域的位置和尺寸。</p></div>
+<pre><code>&lt;header class="site-header"&gt;...&lt;/header&gt;
+&lt;main class="page-shell"&gt;
+  &lt;aside class="sidebar"&gt;...&lt;/aside&gt;
+  &lt;section class="content"&gt;...&lt;/section&gt;
+&lt;/main&gt;
+&lt;footer class="site-footer"&gt;...&lt;/footer&gt;
+
+.page-shell {
+  width: min(1200px, calc(100% - 40px));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+}</code></pre>
+            <div class="code-notes"><article><b>为什么这么写？</b><p><code>minmax(0,1fr)</code> 允许内容列真正收缩，避免长文本或图表把 Grid 撑破。</p></article><article><b>常见错误</b><p>为了“摆到某个位置”大量使用 <code>position:absolute</code>，页面一改尺寸就全部错位。</p></article></div>
+          </div>
+          <div class="tab-panel" data-panel="demo">
+            <div class="demo-card">
+              <div class="demo-title"><div><span>INTERACTIVE DEMO</span><strong>页面骨架观察器</strong><small>切换侧栏位置，并打开结构线框观察页面分区</small></div></div>
+              <div class="control-row">
+                <label>结构 <select id="structure-layout"><option value="sidebar-left">左侧导航</option><option value="sidebar-right">右侧导航</option><option value="no-sidebar">无侧栏</option></select></label>
+                <label class="check-control"><input id="structure-wireframe" type="checkbox" checked />显示结构线框</label>
+              </div>
+              <div class="layout-demo-pad"><div id="structure-demo" class="mock-page sidebar-left wireframe">
+                <header><span>HEADER</span><b>课程标题</b></header>
+                <nav><span>NAV</span><b>章节导航</b><i></i><i></i><i></i></nav>
+                <main><span>MAIN</span><section><b>主要内容</b><p></p><p></p><div class="mock-chart"></div></section></main>
+                <footer><span>FOOTER</span><b>课程信息</b></footer>
+              </div></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-62" class="lesson-section" data-section="62" hidden>
+          <header class="lesson-head">
+            <div class="lesson-overline"><span>LESSON</span><b>02</b></div>
+            <h2>盒模型与间距系统</h2>
+            <span class="lesson-subtitle">Box Model & Spacing</span>
+            <p>页面里的每个元素都是一个盒子。理解 content、padding、border 和 margin，才能真正控制尺寸与留白。</p>
+          </header>
+          <div class="tabs" role="tablist" aria-label="6.2 内容切换">
+            <button class="tab active" data-tab="learn"><span>01</span>讲解</button><button class="tab" data-tab="code"><span>02</span>关键代码</button><button class="tab" data-tab="demo"><span>03</span>演示</button>
+          </div>
+          <div class="tab-panel active" data-panel="learn">
+            <div class="theory-grid">
+              <article><h3>盒模型的四层</h3><div><p>从内到外依次是 <strong>content → padding → border → margin</strong>。Padding 属于组件内部空间，Margin 用来建立组件之间的距离，两者视觉上都像“空白”，但语义不同。</p></div></article>
+              <article><h3>优先使用 border-box</h3><div><p>默认的 <code>content-box</code> 会把 padding 和 border 加到 width 之外。设置 <code>box-sizing:border-box</code> 后，声明的宽度就是元素最终占据的边框尺寸，更容易计算卡片和列宽。</p></div></article>
+              <article><h3>建立统一间距尺度</h3><div><p>不要在页面里随意出现 13px、17px、29px。可以采用 4px 或 8px 为基础的间距系统，例如 4 / 8 / 12 / 16 / 24 / 32 / 48，让不同组件之间的节奏更一致。</p></div></article>
+              <article><h3>处理溢出与最小宽度</h3><div><p>Grid/Flex 子项里常见的“内容把容器撑破”问题，往往不是父布局错误，而是子项默认 <code>min-width:auto</code>。对内容列设置 <code>min-width:0</code>，再配合 <code>overflow</code> 控制溢出。</p></div></article>
+              <article class="key-card"><h3>间距判断</h3><div><p>如果空白属于“这个组件自身”，用 padding；如果空白表达“两个组件之间的关系”，用 gap 或 margin。布局容器内部优先使用 <code>gap</code>，可读性通常更好。</p></div></article>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="code">
+            <div class="code-intro"><span>KEY IMPLEMENTATION</span><h3>全局盒模型 + 间距变量</h3><p>统一盒模型，并用 CSS 变量减少随意的间距数字。</p></div>
+<pre><code>*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+}
+
+.card {
+  padding: var(--space-6);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}</code></pre>
+            <div class="code-notes"><article><b>为什么这么写？</b><p>统一间距令页面更像一个系统，而不是多个独立组件临时拼在一起。</p></article><article><b>常见错误</b><p>把 margin 当成“移动元素”的工具，导致相邻元素出现不可预测的间距和 margin collapse。</p></article></div>
+          </div>
+          <div class="tab-panel" data-panel="demo">
+            <div class="demo-card">
+              <div class="demo-title"><div><span>INTERACTIVE DEMO</span><strong>盒模型计算器</strong><small>拖动参数，观察一个元素实际占据的总宽度</small></div><div id="box-total" class="metric-badge">总宽度 344px</div></div>
+              <div class="control-grid four">
+                <label>Content <b id="box-content-value">240px</b><input id="box-content" type="range" min="160" max="320" value="240" /></label>
+                <label>Padding <b id="box-padding-value">24px</b><input id="box-padding" type="range" min="0" max="48" value="24" /></label>
+                <label>Border <b id="box-border-value">2px</b><input id="box-border" type="range" min="0" max="10" value="2" /></label>
+                <label>Margin <b id="box-margin-value">24px</b><input id="box-margin" type="range" min="0" max="48" value="24" /></label>
+              </div>
+              <div class="box-demo-stage"><div id="box-margin-shell" class="box-margin-shell"><div id="box-border-layer" class="box-border-layer"><div id="box-padding-layer" class="box-padding-layer"><div id="box-content-layer" class="box-content-layer">CONTENT</div></div></div></div></div>
+              <div id="box-formula" class="formula-line">240 + 24×2 + 2×2 + 24×2 = 340px</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-63" class="lesson-section" data-section="63" hidden>
+          <header class="lesson-head">
+            <div class="lesson-overline"><span>LESSON</span><b>03</b></div>
+            <h2>Flexbox：一维弹性布局</h2>
+            <span class="lesson-subtitle">One-dimensional Layout</span>
+            <p>当主要问题是“这一行”或“这一列里的元素怎么排列”时，Flexbox 通常是最直接的工具。</p>
+          </header>
+          <div class="tabs" role="tablist" aria-label="6.3 内容切换"><button class="tab active" data-tab="learn"><span>01</span>讲解</button><button class="tab" data-tab="code"><span>02</span>关键代码</button><button class="tab" data-tab="demo"><span>03</span>演示</button></div>
+          <div class="tab-panel active" data-panel="learn">
+            <div class="theory-grid">
+              <article><h3>主轴与交叉轴</h3><div><p><code>flex-direction</code> 决定主轴方向。<code>justify-content</code> 管主轴上的分配，<code>align-items</code> 管交叉轴上的对齐。先判断主轴，Flexbox 的大部分属性就不容易混淆。</p></div></article>
+              <article><h3>用 gap 管理成员间距</h3><div><p>导航、工具栏、按钮组等组件内部的元素间距，优先使用 <code>gap</code>。它不会给容器首尾额外增加空白，也不需要给第一个/最后一个元素单独清除 margin。</p></div></article>
+              <article><h3>grow、shrink 与 basis</h3><div><p><code>flex: grow shrink basis</code> 决定元素如何分配剩余空间。常用的 <code>flex:1</code> 可以让兄弟元素平分剩余空间；固定侧栏则可以使用 <code>flex:0 0 220px</code>。</p></div></article>
+              <article><h3>需要换行时开启 wrap</h3><div><p>标签组、卡片列表在空间不足时可以使用 <code>flex-wrap:wrap</code>。如果你需要同时严格控制“行”和“列”，通常应考虑 Grid 而不是继续堆 Flex。</p></div></article>
+              <article class="key-card"><h3>什么时候用 Flex？</h3><div><p>导航栏、按钮组、工具栏、单行卡片、图例、标题与操作区等<strong>一维排列</strong>最适合 Flexbox。</p></div></article>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="code">
+            <div class="code-intro"><span>KEY IMPLEMENTATION</span><h3>主轴分配 + 交叉轴对齐</h3><p>少量属性即可完成大多数工具栏和导航布局。</p></div>
+<pre><code>.toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar__search { flex: 1 1 320px; }
+.toolbar__actions { flex: 0 0 auto; }</code></pre>
+            <div class="code-notes"><article><b>为什么这么写？</b><p>搜索框可以伸缩，操作按钮保持自身宽度，空间变化时行为清晰。</p></article><article><b>常见错误</b><p>不理解主轴就不断切换 justify/align；或者给每个子项硬编码宽度，失去 Flex 的弹性。</p></article></div>
+          </div>
+          <div class="tab-panel" data-panel="demo">
+            <div class="demo-card">
+              <div class="demo-title"><div><span>INTERACTIVE DEMO</span><strong>Flexbox 实验台</strong><small>改变主轴、对齐、换行和间距，观察布局立即变化</small></div></div>
+              <div class="control-grid five">
+                <label>direction<select id="flex-direction"><option>row</option><option>column</option><option>row-reverse</option><option>column-reverse</option></select></label>
+                <label>justify<select id="flex-justify"><option>flex-start</option><option>center</option><option>space-between</option><option>space-around</option><option>space-evenly</option></select></label>
+                <label>align<select id="flex-align"><option>stretch</option><option>flex-start</option><option>center</option><option>flex-end</option></select></label>
+                <label>wrap<select id="flex-wrap"><option>nowrap</option><option>wrap</option></select></label>
+                <label>gap <b id="flex-gap-value">16px</b><input id="flex-gap" type="range" min="0" max="40" value="16" /></label>
+              </div>
+              <div class="flex-demo-wrap"><div id="flex-stage" class="flex-stage"><div>01</div><div>02</div><div>03</div><div>04</div></div></div>
+              <code id="flex-css-output" class="live-code">display:flex; justify-content:flex-start; align-items:stretch; gap:16px;</code>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-64" class="lesson-section" data-section="64" hidden>
+          <header class="lesson-head">
+            <div class="lesson-overline"><span>LESSON</span><b>04</b></div>
+            <h2>CSS Grid：二维网格布局</h2>
+            <span class="lesson-subtitle">Two-dimensional Layout</span>
+            <p>当页面需要同时规划“几列”和“几行”，或者要搭建 Dashboard 主骨架时，Grid 比 Flexbox 更合适。</p>
+          </header>
+          <div class="tabs" role="tablist" aria-label="6.4 内容切换"><button class="tab active" data-tab="learn"><span>01</span>讲解</button><button class="tab" data-tab="code"><span>02</span>关键代码</button><button class="tab" data-tab="demo"><span>03</span>演示</button></div>
+          <div class="tab-panel active" data-panel="learn">
+            <div class="theory-grid">
+              <article><h3>列和行一起规划</h3><div><p>Grid 容器通过 <code>grid-template-columns</code> 和 <code>grid-template-rows</code> 建立轨道。子项可以自动进入格子，也可以跨越多列/多行。</p></div></article>
+              <article><h3>fr 表示“剩余空间份额”</h3><div><p><code>1fr 2fr</code> 并不是绝对宽度，而是将可分配空间按 1:2 分配。配合固定侧栏可写成 <code>220px minmax(0,1fr)</code>。</p></div></article>
+              <article><h3>repeat 与 minmax</h3><div><p><code>repeat()</code> 减少重复声明；<code>minmax()</code> 给轨道设置上下限。卡片列表常用 <code>repeat(auto-fit,minmax(220px,1fr))</code> 自动决定列数。</p></div></article>
+              <article><h3>Grid Areas 适合表达页面结构</h3><div><p>对于 header / sidebar / main / footer 这类稳定区域，<code>grid-template-areas</code> 可直接用名字描述布局，代码更接近设计草图。</p></div></article>
+              <article class="key-card"><h3>Flex 还是 Grid？</h3><div><p>只关心一个方向，用 Flex；需要同时控制行列或组件跨区，用 Grid。两者不是竞争关系，真实页面通常会嵌套使用。</p></div></article>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="code">
+            <div class="code-intro"><span>KEY IMPLEMENTATION</span><h3>自适应卡片网格</h3><p>不用写多个断点，也能根据可用宽度自动改变列数。</p></div>
+<pre><code>.card-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}</code></pre>
+            <div class="code-notes"><article><b>为什么这么写？</b><p><code>auto-fit + minmax</code> 让卡片尽量填满一行，同时保证单卡不会小到难读。</p></article><article><b>常见错误</b><p>为了做三列直接给每张卡 <code>width:33.333%</code>，再叠加 gap 后发生溢出。</p></article></div>
+          </div>
+          <div class="tab-panel" data-panel="demo">
+            <div class="demo-card">
+              <div class="demo-title"><div><span>INTERACTIVE DEMO</span><strong>Grid 模板切换器</strong><small>比较等分网格、侧栏结构和 Dashboard 跨列布局</small></div></div>
+              <div class="control-row"><label>预设 <select id="grid-preset"><option value="equal">三列等分</option><option value="sidebar">侧栏 + 内容</option><option value="dashboard">Dashboard</option></select></label><label>Gap <b id="grid-gap-value">16px</b><input id="grid-gap" type="range" min="0" max="36" value="16" /></label></div>
+              <div class="grid-demo-wrap"><div id="grid-stage" class="grid-stage preset-equal"><div class="grid-cell">A</div><div class="grid-cell">B</div><div class="grid-cell">C</div><div class="grid-cell">D</div><div class="grid-cell">E</div><div class="grid-cell">F</div></div></div>
+              <code id="grid-css-output" class="live-code">grid-template-columns: repeat(3, 1fr); gap: 16px;</code>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-65" class="lesson-section" data-section="65" hidden>
+          <header class="lesson-head">
+            <div class="lesson-overline"><span>LESSON</span><b>05</b></div>
+            <h2>响应式布局</h2>
+            <span class="lesson-subtitle">Responsive Design</span>
+            <p>响应式不是把桌面页面整体缩小，而是根据空间重新组织内容、改变列数和优先级。</p>
+          </header>
+          <div class="tabs" role="tablist" aria-label="6.5 内容切换"><button class="tab active" data-tab="learn"><span>01</span>讲解</button><button class="tab" data-tab="code"><span>02</span>关键代码</button><button class="tab" data-tab="demo"><span>03</span>演示</button></div>
+          <div class="tab-panel active" data-panel="learn">
+            <div class="theory-grid">
+              <article><h3>断点由内容决定</h3><div><p>不要机械地只记 768px、1024px。真正的断点应该出现在“当前布局开始拥挤或失去可读性”的位置。先缩窄页面观察，再决定何时重排。</p></div></article>
+              <article><h3>Mobile First</h3><div><p>先写最简单的单列布局，再用 <code>min-width</code> 媒体查询逐步增强。这样默认样式更轻，也更容易保证小屏可用。</p></div></article>
+              <article><h3>流式尺寸与 clamp</h3><div><p><code>clamp(min, preferred, max)</code> 可以让字体、间距和容器尺寸在区间内平滑变化，减少“每个尺寸都写一个断点”的需求。</p></div></article>
+              <article><h3>重排优于缩放</h3><div><p>桌面端的“侧栏 + 两列图表”到了手机上，应变成“顶部导航 + 单列图表”，而不是把整张页面压缩到 40% 导致文字无法阅读。</p></div></article>
+              <article class="key-card"><h3>响应式检查清单</h3><div><p>检查导航是否可操作、正文是否仍可读、图表是否溢出、控件是否有足够触控面积、重要信息是否仍排在前面。</p></div></article>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="code">
+            <div class="code-intro"><span>KEY IMPLEMENTATION</span><h3>Mobile First + 自适应列</h3><p>先保证小屏单列，再在空间足够时升级为多列。</p></div>
+<pre><code>.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.title {
+  font-size: clamp(24px, 3vw, 40px);
+}
+
+@media (min-width: 720px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1080px) {
+  .cards { grid-template-columns: repeat(3, 1fr); }
+}</code></pre>
+            <div class="code-notes"><article><b>为什么这么写？</b><p>默认规则适合小屏，浏览器只在更宽时追加增强样式，逻辑更清楚。</p></article><article><b>常见错误</b><p>只改列数，不检查字体、内边距、按钮尺寸和长文本，导致布局“没溢出但很难用”。</p></article></div>
+          </div>
+          <div class="tab-panel" data-panel="demo">
+            <div class="demo-card">
+              <div class="demo-title"><div><span>INTERACTIVE DEMO</span><strong>响应式宽度模拟器</strong><small>拖动“视口宽度”，观察导航、卡片和内容如何重排</small></div><div id="responsive-mode" class="metric-badge">DESKTOP · 900px</div></div>
+              <div class="responsive-control"><span>360</span><input id="responsive-width" type="range" min="360" max="900" value="900" /><span>900</span></div>
+              <div class="responsive-stage"><div id="responsive-frame" class="responsive-frame mode-desktop">
+                <div class="r-header"><b>DATA LAB</b><nav><i></i><i></i><i></i></nav></div>
+                <div class="r-shell"><aside><b>Menu</b><i></i><i></i><i></i></aside><main><div class="r-hero"><span>Dashboard</span><b>响应式布局示例</b></div><div class="r-cards"><article><b>01</b><i></i></article><article><b>02</b><i></i></article><article><b>03</b><i></i></article></div><div class="r-content"><div></div><div></div></div></main></div>
+              </div></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-66" class="lesson-section" data-section="66" hidden>
+          <header class="lesson-head">
+            <div class="lesson-overline"><span>LESSON</span><b>06</b></div>
+            <h2>综合案例：可视化 Dashboard 布局</h2>
+            <span class="lesson-subtitle">Layout Composition</span>
+            <p>把前五节组合起来：用语义结构确定区域，用 Grid 搭骨架，用 Flex 排内部组件，再用响应式规则完成不同屏幕的重排。</p>
+          </header>
+          <div class="tabs" role="tablist" aria-label="6.6 内容切换"><button class="tab active" data-tab="learn"><span>01</span>讲解</button><button class="tab" data-tab="code"><span>02</span>关键代码</button><button class="tab" data-tab="demo"><span>03</span>演示</button></div>
+          <div class="tab-panel active" data-panel="learn">
+            <div class="theory-grid">
+              <article><h3>第一步：画区域草图</h3><div><p>先只画 Header、Sidebar、Summary、Main Chart、Secondary Chart 等大区块，不画具体内容。目标是确定信息优先级和阅读路径。</p></div></article>
+              <article><h3>第二步：选择布局工具</h3><div><p>页面主骨架使用 Grid；顶部工具栏、筛选项、图例等局部一维结构使用 Flex；每张卡片内部再回到正常文档流。</p></div></article>
+              <article><h3>第三步：限制尺寸</h3><div><p>给侧栏、卡片最小宽度、图表最小高度设置合理约束。布局不是“让所有东西都能缩”，而是定义哪些能缩、哪些要换行、哪些需要隐藏或移动。</p></div></article>
+              <article><h3>第四步：设计响应式降级</h3><div><p>桌面端可以同时显示更多辅助信息；平板减少列数；手机端保留关键指标和主图，将次要内容向下排列。不同尺寸保持信息意义一致，而不是视觉形式完全一致。</p></div></article>
+              <article><h3>第五步：用线框测试，再做美化</h3><div><p>先打开边界线和区域标签，检查布局关系；确认没有溢出、错位和不合理留白后，再加入颜色、阴影、圆角和图表细节。</p></div></article>
+              <article class="key-card"><h3>最终原则</h3><div><p>好的页面布局应同时满足：<strong>层级清晰、空间稳定、组件可复用、尺寸可适配、代码可维护</strong>。美观来自这些规则的一致执行，而不是单独某个颜色或圆角。</p></div></article>
+            </div>
+          </div>
+          <div class="tab-panel" data-panel="code">
+            <div class="code-intro"><span>KEY IMPLEMENTATION</span><h3>Grid 骨架 + 响应式重排</h3><p>桌面两列，移动端改单列；内部的小组件继续使用 Flex。</p></div>
+<pre><code>.dashboard {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+  min-height: 100vh;
+}
+
+.dashboard-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 760px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-areas: "header" "main";
+  }
+  .sidebar { display: none; }
+  .dashboard-main { grid-template-columns: 1fr; }
+}</code></pre>
+            <div class="code-notes"><article><b>为什么这么写？</b><p>主区域的关系直接写在 Grid 中，局部组件则保持独立，后续修改某张卡片不会破坏整页。</p></article><article><b>常见错误</b><p>桌面、平板、手机分别写三套完全不同的 DOM，维护成本高；更好的方法是复用结构，只改变布局规则。</p></article></div>
+          </div>
+          <div class="tab-panel" data-panel="demo">
+            <div class="demo-card">
+              <div class="demo-title"><div><span>COMPOSITE DEMO</span><strong>Dashboard 页面布局原型</strong><small>切换桌面 / 平板 / 手机，并打开网格辅助线检查布局</small></div></div>
+              <div class="dashboard-controls"><div class="segmented"><button class="active" data-dashboard-size="desktop">桌面</button><button data-dashboard-size="tablet">平板</button><button data-dashboard-size="mobile">手机</button></div><label class="check-control"><input id="dashboard-grid-toggle" type="checkbox" />显示网格辅助线</label></div>
+              <div class="dashboard-preview-stage"><div id="dashboard-prototype" class="dashboard-prototype desktop">
+                <header class="dp-header"><b>ANALYTICS</b><span>Overview</span><button>Export</button></header>
+                <aside class="dp-sidebar"><b>Workspace</b><i></i><i></i><i></i><i></i></aside>
+                <main class="dp-main"><section class="dp-stats"><article><span>Visits</span><b>24.8K</b></article><article><span>Users</span><b>8.2K</b></article><article><span>Rate</span><b>68%</b></article></section><section class="dp-charts"><article class="dp-chart-main"><header><b>Traffic trend</b><span>Last 30 days</span></header><div class="line-skeleton"><i></i><i></i><i></i><i></i><i></i><i></i></div></article><article class="dp-chart-side"><header><b>Channels</b></header><div class="bar-skeleton"><i style="--v:74%"></i><i style="--v:56%"></i><i style="--v:82%"></i><i style="--v:42%"></i></div></article></section></main>
+              </div></div>
+            </div>
+          </div>
+        </section>
+
+        <nav class="reader-pagination" aria-label="小节切换">
+          <button id="lesson-prev" class="page-turn prev" type="button"><span>上一节</span><strong>—</strong></button>
+          <div class="reader-position"><span id="reader-position">01 / 06</span><i></i></div>
+          <button id="lesson-next" class="page-turn next" type="button"><span>下一节</span><strong>盒模型与间距系统</strong></button>
+        </nav>
+      </div>
+
+      <footer>
+        <div><strong>第 6 章 · 可视化页面布局</strong><span>HTML + CSS + JavaScript · 6 个交互 Demo</span></div>
+        <p>课程作业页面 · 重点：页面结构、布局方法与响应式设计 · 支持 GitHub Pages</p>
+      </footer>
+    </section>
+  </main>
+</body>
+</html>
