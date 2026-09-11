@@ -1,6 +1,7 @@
 (function(){
   const sections=[...document.querySelectorAll('.lesson-section')];
   const links=[...document.querySelectorAll('.side-link')];
+  const roadmapSteps=[...document.querySelectorAll('.roadmap-step')];
   const prevBtn=document.querySelector('#lesson-prev');
   const nextBtn=document.querySelector('#lesson-next');
   const progressCurrent=document.querySelector('#progress-current');
@@ -20,8 +21,13 @@
     if(!order.includes(id)) id='61';
     current=id;
     const index=order.indexOf(id);
-    sections.forEach(s=>s.classList.toggle('active-section',s.dataset.section===id));
+    sections.forEach(s=>{
+      const active=s.dataset.section===id;
+      s.classList.toggle('active-section',active);
+      s.hidden=!active;
+    });
     links.forEach(a=>a.classList.toggle('active',a.dataset.section===id));
+    roadmapSteps.forEach(a=>a.classList.toggle('active',a.dataset.goSection===id));
     if(progressCurrent) progressCurrent.textContent=String(index+1).padStart(2,'0');
     if(progressBar) progressBar.style.width=`${(index+1)/order.length*100}%`;
     if(readerPosition) readerPosition.textContent=`${String(index+1).padStart(2,'0')} / 05`;
