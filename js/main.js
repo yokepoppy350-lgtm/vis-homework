@@ -1,71 +1,93 @@
-(function(){
-  const sections=[...document.querySelectorAll('.lesson-section')];
-  const links=[...document.querySelectorAll('.side-link')];
-  const roadmapSteps=[...document.querySelectorAll('.roadmap-step')];
-  const prevBtn=document.querySelector('#lesson-prev');
-  const nextBtn=document.querySelector('#lesson-next');
-  const progressCurrent=document.querySelector('#progress-current');
-  const progressBar=document.querySelector('#progress-bar');
-  const readerPosition=document.querySelector('#reader-position');
-  const titles={
-    '61':'页面骨架与视觉层级',
-    '62':'盒模型与间距系统',
-    '63':'Flexbox：一维弹性布局',
-    '64':'CSS Grid：二维网格布局',
-    '65':'响应式布局',
-    '66':'综合案例：Dashboard 布局'
-  };
-  const order=['61','62','63','64','65','66'];
-
-  function switchSection(id,{updateHash=true,scroll=true}={}){
-    if(!order.includes(id)) id='61';
-    const index=order.indexOf(id);
-    sections.forEach(s=>{
-      const active=s.dataset.section===id;
-      s.classList.toggle('active-section',active);
-      s.hidden=!active;
-    });
-    links.forEach(a=>a.classList.toggle('active',a.dataset.section===id));
-    roadmapSteps.forEach(a=>a.classList.toggle('active',a.dataset.goSection===id));
-    if(progressCurrent) progressCurrent.textContent=String(index+1).padStart(2,'0');
-    if(progressBar) progressBar.style.width=`${(index+1)/order.length*100}%`;
-    if(readerPosition) readerPosition.textContent=`${String(index+1).padStart(2,'0')} / 06`;
-
-    const prevId=order[index-1],nextId=order[index+1];
-    if(prevBtn){
-      prevBtn.disabled=!prevId;
-      prevBtn.dataset.target=prevId||'';
-      prevBtn.querySelector('strong').textContent=prevId?titles[prevId]:'已经是第一节';
-    }
-    if(nextBtn){
-      nextBtn.disabled=!nextId;
-      nextBtn.dataset.target=nextId||'';
-      nextBtn.querySelector('strong').textContent=nextId?titles[nextId]:'本章已完成';
-    }
-    if(updateHash) history.replaceState(null,'',`#section-${id}`);
-    if(scroll){
-      const reader=document.querySelector('.lesson-reader');
-      const y=reader.getBoundingClientRect().top+window.scrollY-78;
-      window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
-    }
-  }
-
-  document.addEventListener('click',e=>{
-    const side=e.target.closest('.side-link');
-    if(side){e.preventDefault();switchSection(side.dataset.section);return;}
-    const top=e.target.closest('[data-go-section]');
-    if(top){e.preventDefault();switchSection(top.dataset.goSection);return;}
-    const turn=e.target.closest('.page-turn');
-    if(turn && !turn.disabled && turn.dataset.target){switchSection(turn.dataset.target);return;}
-    const tab=e.target.closest('.tab');
-    if(tab){
-      const section=tab.closest('.lesson-section');
-      section.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===tab));
-      section.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p.dataset.panel===tab.dataset.tab));
-    }
-  });
-
-  const hashMatch=location.hash.match(/section-(6[1-6])/);
-  switchSection(hashMatch?hashMatch[1]:'61',{updateHash:false,scroll:false});
-  window.LayoutDemos?.init();
+(()=>{
+const $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let lang='zh';try{lang=localStorage.getItem('layout-language')==='en'?'en':'zh'}catch{}
+const query=new URLSearchParams(location.search), standalone=document.body.dataset.standalone==='true';
+if(['zh','en'].includes(query.get('lang')))lang=query.get('lang');
+let current=Math.max(0,Math.min(5,Number(standalone?query.get('lesson')||1:location.hash.match(/lesson-(\d)/)?.[1]||1)-1));
+if(!Number.isFinite(current))current=0;
+const tabs=Array(6).fill(standalone?'demo':'learn');
+const defaults=i=>({width:i===2?680:900,before:false,guides:i===0,space:24,gap:16,box:'border-box',declared:280,border:2,margin:16,direction:'row',justify:'space-between',align:'center',wrap:'wrap',long:false,preset:'priority'});
+let states=Array.from({length:6},(_,i)=>defaults(i));
+const t=p=>p[lang==='en'?1:0], L=()=>Course.lessons[current], txt=(zh,en)=>t([zh,en]);
+const pair={learn:['讲解','Explanation'],code:['关键代码','Key code'],demo:['演示','Demo']};
+const ruleBase=`.dashboard { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.metrics { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.charts { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.sidebar { display: none; }
+.mobile-nav { display: block; }
+@media (min-width: 520px) {
+  .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 760px) {
+  .dashboard { grid-template-columns: 150px minmax(0, 1fr); }
+  .charts { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .sidebar { display: block; }
+  .mobile-nav { display: none; }
+}`;
+function gridRules(s){let cols=s.preset==='equal'?'repeat(2, minmax(0, 1fr))':'minmax(0, 2fr) minmax(0, 1fr)';return `.lab-grid { display: grid; grid-template-columns: ${cols}; gap: ${s.gap}px; }
+.lab-grid > .metrics { grid-column: ${s.preset==='span'?'1 / -1':'auto'}; }
+.column-guides { display: grid; grid-template-columns: ${cols}; gap: ${s.gap}px; }`}
+function flexRules(s){return `.toolbar { display: flex; flex-direction: ${s.direction}; justify-content: ${s.justify}; align-items: ${s.align}; flex-wrap: ${s.wrap}; gap: ${s.gap}px; }
+.search { flex: 1 1 220px; min-width: 160px; }
+.filter { flex: 0 0 auto; }`}
+function code(i=current){const s=states[i];return [`.dashboard { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; }
+.main { min-width: 0; }
+.metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+/* DOM: header → navigation → metrics → charts */`,`.metric-box { box-sizing: ${s.box}; width: ${s.declared}px; padding: ${s.space}px; border: ${s.border}px solid #539b8b; margin: ${s.margin}px; }
+/* border-box = content + left/right padding + left/right border
+   horizontal footprint = border-box + left/right margin */`,flexRules(s),gridRules(s),ruleBase,ruleBase+'\n'+flexRules(s)][i]}
+function nav(i){return `<a class="side-link tone-${i+1} ${i===current?'active':''}" href="#lesson-${i+1}" data-lesson="${i}" ${i===current?'aria-current="step"':''}><span class="side-index">0${i+1}</span><span><b>${esc(t(Course.lessons[i].short))}</b><small>${esc(t(Course.lessons[i].title))}</small></span></a>`}
+function render(){document.documentElement.lang=lang==='zh'?'zh-CN':'en';document.title=t(Course.title)+' · Layout Studio';if(standalone){renderStandalone();return;}$('#app').innerHTML=`
+<header class="topbar"><a class="brand" href="#lesson-1" data-lesson="0"><span class="brand-mark">LS</span><span class="brand-copy"><strong>LAYOUT STUDIO</strong></span></a><div class="top-chapter">${txt('第 6 章 · 页面布局','Chapter 6 · Page Layout')}</div><div class="top-actions"><button id="language" class="language" aria-label="${txt('切换到英语','Switch to Chinese')}">${lang==='zh'?'English':'中文'}</button></div></header>
+<main class="course-shell"><aside class="chapter-nav"><div class="chapter-nav-head"><span>${txt('案例课程','CASE STUDY')}</span><h2>${esc(t(Course.title))}</h2><p>${txt('六步改进一个学习数据看板','Six steps to improve one learning dashboard')}</p></div><nav class="lesson-nav" aria-label="${txt('章节目录','Lessons')}">${Course.lessons.map((_,i)=>nav(i)).join('')}</nav><div class="side-note"><strong>${txt('从布局原则到设计决策','From principles to decisions')}</strong><p>${txt('模拟数据仅供布局教学。','Simulated data for layout teaching only.')}</p></div></aside>
+<section class="workspace"><section class="chapter-strip"><div class="strip-title"><div><h1>${esc(t(Course.title))}</h1><p>${esc(t(Course.subtitle))}</p></div></div><div class="strip-progress"><span>${txt('章节位置','LESSON POSITION')}</span><strong>0${current+1}</strong><em>/06</em><div class="progress-track"><i style="width:${(current+1)/6*100}%"></i></div></div><nav class="mobile-lessons" aria-label="${txt('章节目录','Lessons')}">${Course.lessons.map((l,i)=>`<button data-lesson="${i}" ${i===current?'aria-current="step"':''}>${i+1}. ${esc(t(l.short))}</button>`).join('')}</nav></section>
+<div class="lesson-reader"><section class="lesson-section active-section" data-section="6${current+1}"><header class="lesson-head"><div class="lesson-overline">${txt('案例步骤','CASE STEP')} 0${current+1}</div><h2>${esc(t(L().title))}</h2><p>${esc(t(L().intro))}</p></header>
+<div class="tabs" role="tablist" aria-label="${txt('小节内容','Lesson content')}">${Object.keys(pair).map(k=>`<button role="tab" class="tab ${tabs[current]===k?'active':''}" id="tab-${k}" aria-selected="${tabs[current]===k}" aria-controls="panel-${k}" tabindex="${tabs[current]===k?0:-1}" data-tab="${k}">${t(pair[k])}</button>`).join('')}</div>
+${Object.keys(pair).map(k=>`<div role="tabpanel" tabindex="0" id="panel-${k}" aria-labelledby="tab-${k}" ${tabs[current]!==k?'hidden':''}>${k==='learn'?learn():k==='code'?`<div class="code-intro"><h3>${txt('与当前实验参数对应','Matches the current experiment')}</h3><p>${txt('调整演示后，下面的规则会同步更新。响应式规则也直接用于预览内部页面。','The rules update after demo changes. Responsive rules also run directly inside the preview page.')}</p></div><pre><code id="lesson-code">${esc(code())}</code></pre><div class="code-notes"><article><b>${txt('为什么这么写？','Why this code?')}</b><p>${esc(t(TeachingNotes[current].why))}</p></article><article><b>${txt('常见错误','Common pitfalls')}</b><p>${esc(t(TeachingNotes[current].pitfall))}</p></article></div>`:demo()}</div>`).join('')}
+</section><nav class="reader-pagination" aria-label="${txt('小节切换','Lesson navigation')}"><button class="page-turn" data-lesson="${current-1}" ${current===0?'disabled':''}><span>${txt('上一节','Previous')}</span><strong>${current?t(Course.lessons[current-1].short):txt('第一节','First lesson')}</strong></button><span class="reader-position">${current+1} / 6</span><button class="page-turn next" data-lesson="${current+1}" ${current===5?'disabled':''}><span>${txt('下一节','Next')}</span><strong>${current<5?t(Course.lessons[current+1].short):txt('最后一节','Last lesson')}</strong></button></nav></div><footer class="course-footer"><p>${txt('布局教学 · 模拟数据 · HTML / CSS / JavaScript','Layout teaching · Simulated data · HTML / CSS / JavaScript')}</p><a href="${lang==='zh'?'lecture.zh.md':'lecture.en.md'}" download>${txt('下载完整讲义','Download lecture notes')}</a><a href="highlights.html" target="_blank" rel="noopener">${txt('项目亮点说明','Project highlights')}</a></footer></section></main>`;bind();if(tabs[current]==='demo')updatePreview();}
+function renderStandalone(){
+ $('#app').innerHTML=`<header class="topbar"><a class="brand" href="../index.html#lesson-${current+1}"><span class="brand-mark">LS</span><span>${txt('返回教学章节','Back to lesson')}</span></a><div class="top-chapter">${txt('第 6 章 · 独立演示','Chapter 6 · Standalone demo')}</div><div class="top-actions"><button id="language" class="language">${lang==='zh'?'English':'中文'}</button></div></header><main class="standalone-shell"><header class="lesson-head"><h1>${esc(t(L().title))}</h1><p>${esc(t(L().intro))}</p></header>${demo()}</main>`;
+ bind();updatePreview();
+}
+function learn(){return `<div class="case-task"><b>${txt('本节任务','Your task')}</b><p>${esc(t(L().task))}</p><button data-tab="demo" class="action">${txt('打开实验','Open experiment')} →</button></div><div class="theory-grid">${L().theory.map(p=>`<article><h3>${esc(t(p[0]))}</h3><div><p>${esc(t(p[1]))}</p></div></article>`).join('')}<article class="key-card"><h3>${txt('设计原则','Design principle')}</h3><div><p>${esc(t(L().takeaway))}</p></div></article></div>`}
+function select(key,label,options){return `<label>${t(label)}<select data-control="${key}" id="control-${key}">${options.map(([v,l])=>`<option value="${v}" ${states[current][key]===v?'selected':''}>${Array.isArray(l)?t(l):l}</option>`).join('')}</select></label>`}
+function range(key,label,min,max){return `<label>${t(label)} <output id="value-${key}">${states[current][key]}px</output><input data-control="${key}" id="control-${key}" type="range" min="${min}" max="${max}" value="${states[current][key]}"></label>`}
+function check(key,label){return `<label class="check-control"><input type="checkbox" data-control="${key}" ${states[current][key]?'checked':''}>${t(label)}</label>`}
+function demo(){let i=current;return `<div class="case-task"><b>${txt('操作任务','Experiment task')}</b><p>${esc(t(L().task))}</p></div><div class="demo-card"><div class="demo-title"><div><strong>${txt('学习数据看板 · 布局实验','Learning dashboard · Layout experiment')}</strong><small>${txt('控件改变布局；模拟内容不用于真实数据分析。','Controls change layout; simulated content is not for real data analysis.')}</small></div>${standalone?'':`<a class="action" href="demo/index.html?lesson=${current+1}&lang=${lang}" target="_blank" rel="noopener">${txt('独立打开演示 ↗','Open standalone demo ↗')}</a>`}<button id="reset" class="action">${txt('重置','Reset')}</button></div><div class="controls">
+${i===1?select('box',['盒模型','Box sizing'],[['border-box','border-box'],['content-box','content-box']])+range('declared',['声明宽度','Declared width'],240,360)+range('space',['内边距','Padding'],0,48)+range('border',['边框','Border'],0,10)+range('margin',['外边距','Margin'],0,32):range('width',['内部视口宽度','Inner viewport width'],360,1100)}
+${[0,5].includes(i)?check('before',['查看改进前（教学反例）','Show before (counterexample)']):''}
+${[0,3,5].includes(i)?check('guides',[i===0?'区域边界':'实际列线',i===0?'Region outlines':'Actual column guides']):''}
+${i===2?select('direction',['主轴方向','Direction'],[['row','row'],['column','column']])+select('justify',['主轴分配','Justify'],[['flex-start','flex-start'],['center','center'],['space-between','space-between']])+select('align',['交叉轴对齐','Align'],[['flex-start','flex-start'],['center','center'],['stretch','stretch']])+select('wrap',['换行','Wrapping'],[['wrap','wrap'],['nowrap','nowrap']])+range('gap',['成员间距','Gap'],0,32)+check('long',['较长文字','Longer labels']):''}
+${i===3?select('preset',['布局方案','Layout preset'],[['equal',['等分','Equal']],['priority',['主次 2:1','Priority 2:1']],['span',['摘要跨列','Spanning summary']]])+range('gap',['轨道间距','Track gap'],0,32):''}
+${[4,5].includes(i)?`<div class="size-buttons">${[[390,['手机','Phone']],[680,['平板','Tablet']],[1000,['桌面','Desktop']]].map(([w,l])=>`<button class="action" data-size="${w}">${t(l)} · ${w}px</button>`).join('')}</div>`:''}</div>
+<p class="preview-note">${txt('预览保持标注宽度；若超出可见区域，请在预览内横向滚动。','The preview keeps the stated width. Scroll horizontally within the preview if it exceeds the visible area.')}</p><div class="preview-scroll" tabindex="0" role="region" aria-label="${txt('可横向滚动的演示预览','Horizontally scrollable demo preview')}"><iframe id="preview" title="${txt('学习数据看板布局预览','Learning dashboard layout preview')}" sandbox="allow-same-origin"></iframe></div><div class="feedback" id="feedback" role="status" aria-live="polite"></div><details class="live-rules"><summary>${txt('查看当前布局代码','View current layout code')}</summary><pre><code id="live-code">${esc(code())}</code></pre></details></div>`}
+function bind(){document.querySelectorAll('[data-lesson]').forEach(el=>el.onclick=e=>{e.preventDefault();let i=+el.dataset.lesson;if(i<0||i>5)return;current=i;history.pushState(null,'',`#lesson-${i+1}`);render();$('.lesson-head').scrollIntoView({block:'start'});});
+$('#language').onclick=()=>{lang=lang==='zh'?'en':'zh';try{localStorage.setItem('layout-language',lang)}catch{}render();$('#language').focus()};
+document.querySelectorAll('[data-tab]').forEach(el=>el.onclick=()=>{tabs[current]=el.dataset.tab;render();$('#tab-'+tabs[current]).focus()});
+const tablist=document.querySelector('[role=tablist]');if(tablist)tablist.onkeydown=e=>{const keys=['learn','code','demo'];let n=keys.indexOf(tabs[current]);if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();n=e.key==='Home'?0:e.key==='End'?2:(n+(e.key==='ArrowRight'?1:2))%3;tabs[current]=keys[n];render();$('#tab-'+keys[n]).focus()};
+document.querySelectorAll('[data-control]').forEach(el=>el.addEventListener(el.type==='range'?'input':'change',()=>{states[current][el.dataset.control]=el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.value;let o=$('#value-'+el.dataset.control);if(o)o.textContent=el.value+'px';updatePreview()}));
+document.querySelectorAll('[data-size]').forEach(el=>el.onclick=()=>{states[current].width=+el.dataset.size;$('#control-width').value=el.dataset.size;$('#value-width').textContent=el.dataset.size+'px';updatePreview()});$('#reset').onclick=()=>{states[current]=defaults(current);render()};}
+function previewDocument(){const s=states[current],i=current, Z=(zh,en)=>esc(txt(zh,en));
+const metric=(a,b,n)=>`<article class="metric"><span>${Z(a,b)}</span><strong>${n}</strong><small>${Z('模拟数据 · 本周','Sample data · This week')}</small></article>`;
+const metrics=`<section class="metrics" aria-label="${Z('学习指标','Learning metrics')}">${metric('本周学习','Weekly study',Z('18.5 小时','18.5 h'))}${metric('完成课程','Courses completed','6')}${metric('目标进度','Goal progress','74%')}</section>`;
+const trend=`<article class="chart trend"><h2>${Z('学习时长趋势','Study time trend')}</h2><p>${Z('最近 7 天 · 小时','Last 7 days · hours')}</p><svg viewBox="0 0 400 150" role="img" aria-label="${Z('模拟学习时长趋势图','Sample study-time trend chart')}"><path d="M20 30H380 M20 75H380 M20 120H380" stroke="#e1e7ed"/><path d="M20 120L80 90L140 105L200 40L260 65L320 30L380 50" fill="none" stroke="#347f9c" stroke-width="4"/></svg><small>${Z('周一 → 周日 · 示例趋势','Mon → Sun · illustrative trend')}</small></article>`;
+const courses=`<article class="chart courses"><h2>${Z('课程分布','Course distribution')}</h2><p>${Z('学习时间占比','Share of study time')}</p><div class="bars">${[['设计','Design',45],['编程','Coding',35],['阅读','Reading',20]].map(([a,b,v])=>`<div><span>${Z(a,b)} · ${v}%</span><i style="width:${v*2}%"></i></div>`).join('')}</div></article>`;
+const toolbar=`<div class="toolbar"><div class="search"><span>${Z('搜索区域（布局示例）','Search region (layout sample)')}</span><b>${s.long?Z('搜索课程名称、学习主题和课程说明','Search course names, learning topics and descriptions'):Z('搜索课程…','Search courses…')}</b></div><div class="filter"><span>${Z('课程筛选（布局示例）','Course filter (layout sample)')}</span><b>${s.long?Z('全部课程与跨学科学习项目','All courses and interdisciplinary projects'):Z('全部课程','All courses')}</b></div></div>`;
+let content=i===1?`<div class="box-stage"><div class="metric-box"><span>${Z('本周学习','Weekly study')}</span><strong>${Z('18.5 小时','18.5 hours')}</strong><p>${Z('保持学习节奏，逐步完成本周目标。','Keep a steady pace toward your weekly learning goal.')}</p></div></div>`:`<header class="page-header"><div><small>${Z('学习空间','LEARNING SPACE')}</small><h1>${Z('我的学习看板','My learning dashboard')}</h1></div><span>${Z('本周概览','Weekly overview')}</span></header><div class="dashboard"><aside class="sidebar"><b>${Z('学习导航','Learning navigation')}</b><a href="about:srcdoc#overview">${Z('概览','Overview')}</a><a href="about:srcdoc#distribution">${Z('课程分布','Courses')}</a></aside><main class="main" id="overview"><details class="mobile-nav"><summary>${Z('学习导航','Learning navigation')}</summary><a href="about:srcdoc#overview">${Z('概览','Overview')}</a><a href="about:srcdoc#distribution">${Z('课程分布','Courses')}</a></details>${toolbar}<div class="composition ${i===3?'lab-grid':''}">${metrics}${i===3?trend+courses:`<div class="charts">${trend}${courses}</div>`}${s.guides&&i!==0?`<div class="column-guides" aria-hidden="true"><i></i><i></i></div>`:''}</div><p id="distribution" class="note">${Z('示例数据仅用于页面布局教学。课程分布在小屏中仍然保留。','Sample data is for layout teaching only. Course distribution remains available on narrow screens.')}</p></main></div>`;
+return `<!doctype html><html lang="${lang==='zh'?'zh-CN':'en'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+*{box-sizing:border-box}body{margin:0;padding:20px;color:#25334b;background:#f5f7fa;font:14px/1.6 'Segoe UI','Microsoft YaHei',sans-serif}h1{font-size:24px;line-height:1.3;margin:3px 0}h2{font-size:16px;margin:0}p{margin:5px 0 12px;color:#667386}small{color:#607085;font-size:12px}.page-header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px}.page-header>span{font-size:12px}.sidebar{padding:16px;background:white;border:1px solid #dde4ed;border-radius:12px}.sidebar a,.mobile-nav a{display:block;padding:10px 0;color:#4758a2}.main{min-width:0}.toolbar{padding:14px;margin-bottom:18px;border:1px solid #dbe4ea;background:#eaf5f2;border-radius:10px;overflow:auto}.search,.filter{padding:10px 12px;background:#fff;border:1px solid #dbe3e9;border-radius:7px}.toolbar span{display:block;font-size:11px;color:#617486}.toolbar b{display:block;font-size:13px;font-weight:500;white-space:normal;overflow-wrap:anywhere}.filter{max-width:100%}.composition{position:relative}.metric,.chart{min-width:0;border:1px solid #dce3ec;background:white;border-radius:10px;padding:18px}.metric span,.metric small{display:block}.metric strong{display:block;font-size:26px;color:#236a60;margin:5px 0}.chart{margin:0}.chart svg{display:block;width:100%;height:auto;max-height:190px}.charts{margin-top:16px}.bars>div{margin:15px 0}.bars span{font-size:12px}.bars i{display:block;height:12px;background:#7697c8;border-radius:4px;margin-top:6px}.mobile-nav{padding:10px 0 16px}.mobile-nav summary{cursor:pointer;color:#4758a2}.note{margin-top:16px;font-size:12px}.column-guides{display:grid;position:absolute;inset:0;pointer-events:none;grid-template-columns:1fr;gap:16px;z-index:3}.column-guides i{background:rgba(108,90,208,.06);border-left:2px dashed #7c61c9;border-right:2px dashed #7c61c9}.column-guides i:nth-child(2){display:none}@media(min-width:760px){.column-guides{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}.column-guides i:nth-child(2){display:block}}
+${ruleBase}
+${flexRules(s)}
+${i===0?`.dashboard{grid-template-columns:150px minmax(0,1fr)}.sidebar{display:block}.mobile-nav{display:none}`:''}
+${i===3?gridRules(s)+`.lab-grid>.metrics{display:flex;flex-direction:column}.lab-grid .column-guides i:nth-child(2){display:block}.lab-grid>.column-guides{grid-column:1/-1}.lab-grid .chart{min-height:210px}`:''}
+${i===2?`.toolbar{min-height:180px}.dashboard{grid-template-columns:1fr}.sidebar{display:none}`:''}
+${s.guides&&i===0?`.page-header,.sidebar,.main,.metrics,.charts{outline:2px dashed #7c61c9;outline-offset:3px}`:''}
+${s.before?`.composition{display:flex;flex-direction:column;gap:5px}.metrics{order:2;gap:3px}.charts{order:1;grid-template-columns:1fr 1fr;gap:3px}.metric,.chart{padding:5px;border-radius:0}.metric strong{font-size:15px;color:#25334b}.chart h2{font-size:24px}.toolbar{gap:3px}.page-header{margin-bottom:4px}.column-guides{display:none}`:''}
+.box-stage{display:flow-root;background:#fff3db;min-width:max-content;width:max-content;outline:1px dashed #b88c38;margin:12px}.metric-box{box-sizing:${s.box};width:${s.declared}px;padding:${s.space}px;border:${s.border}px solid #539b8b;margin:${s.margin}px;background:#e6f4ef;overflow-wrap:anywhere}.metric-box strong{display:block;font-size:24px}.metric-box p{background:white;margin:8px 0 0;color:#445669}.metric-box span{display:block}
+</style></head><body>${content}</body></html>`}
+function updatePreview(){const frame=$('#preview');if(!frame)return;const s=states[current],i=current;frame.style.width=(i===1?Math.max(620,s.declared+2*(s.space+s.border+s.margin)+50):s.width)+'px';frame.onload=()=>{const doc=frame.contentDocument;frame.style.height=Math.ceil(doc.documentElement.scrollHeight+4)+'px';if(i===1){const b=doc.querySelector('.metric-box'),cs=doc.defaultView.getComputedStyle(b),bw=b.getBoundingClientRect().width,content=bw-2*s.space-2*s.border;$('#feedback').textContent=txt(`内容 ${content}px · 边框盒 ${bw}px · 含外边距水平占用 ${bw+2*s.margin}px。外边距是边框外的空间。`,`Content ${content}px · Border box ${bw}px · Horizontal footprint with margins ${bw+2*s.margin}px. Margins are outside the border.`)}else{$('#feedback').textContent=txt(`内部视口 ${doc.documentElement.clientWidth}px。${i>=4?(s.width<520?'单列；导航可展开，所有图表保留。':s.width<760?'指标三列；图表纵向排列，导航可展开。':'侧栏可见；图表按主次两列排列。'):'观察当前布局，并与讲解中的设计原则对照。'}`,`Inner viewport ${doc.documentElement.clientWidth}px. ${i>=4?(s.width<520?'One column; expandable navigation; all charts retained.':s.width<760?'Three metric columns; stacked charts; expandable navigation.':'Sidebar visible; primary and secondary chart columns.'):'Compare this layout with the design principles in the explanation.'}`)}const details=doc.querySelector('details');if(details)details.addEventListener('toggle',()=>{frame.style.height='1px';frame.style.height=doc.documentElement.scrollHeight+4+'px'})};frame.style.height='1px';frame.srcdoc=previewDocument();$('#live-code').textContent=code();if($('#lesson-code'))$('#lesson-code').textContent=code();}
+window.addEventListener('popstate',()=>{current=Math.max(0,Math.min(5,Number(standalone?query.get('lesson')||1:location.hash.match(/lesson-(\d)/)?.[1]||1)-1));render()});
+render();
 })();
+
+
